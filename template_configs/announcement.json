@@ -1,0 +1,62 @@
+{
+    "id": "announcement",
+    "display_name": "Announcement",
+    "database": "announcement.db",
+    "document_template": "announcement/announcement.docx",
+    "base_pdf": "announcement/announcement.pdf",
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "announcement.xlsx",
+        "word_template": "announcement.docx"
+    },
+    "fields": [
+        {
+            "name": "file",
+            "label": "File No.",
+            "type": "text",
+            "placeholder": "Enter file number"
+        },
+        {
+            "name": "rly",
+            "label": "Rly",
+            "type": "text",
+            "placeholder": "Enter rly"
+        },
+        {
+            "name": "from_col",
+            "label": "From",
+            "type": "text",
+            "placeholder": "Enter from person"
+        },
+        {
+            "name": "to_col",
+            "label": "To",
+            "type": "text",
+            "placeholder": "Enter to person"
+        },
+        {
+            "name": "puc",
+            "label": "Event",
+            "type": "text",
+            "placeholder": "Enter event"
+        }
+    ],
+    "placeholders": {
+        "<FILE>": {"field": "fileo", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<RLY>": "rly",
+        "<RLY_NL>": {"field": "rly", "replace": {",": ",\n"}},
+        "<FROM_PERSON>": "from_col",
+        "<TO_PERSON>": "to_col",
+        "<EVENT>": "puc",
+        "<LINK>": "link",
+        "<START_DT>": "start_dt",
+        "<END_DT>": "end_dt",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+        "<ANNOUNCEMENT_TIMEPERIOD>": "announcement_timeperiod",
+        "<ANNOUNCEMENT_FREQUENCY>": "announcement_frequency",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    },
+    "runtime_inputs": ["link", "start_dt", "end_dt", "announcement_timeperiod", "announcement_frequency"]
+}

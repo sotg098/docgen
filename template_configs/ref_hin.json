@@ -1,0 +1,106 @@
+{
+    "id": "ref_hin",
+    "display_name": "Reference (Hindi) - Direct",
+    "database": "ref_hin.db",
+    "document_template": "ref_hin/ref_hin.docx",
+    "base_pdf": "ref_hin/ref_hin.pdf",
+    "download_options": [
+        {
+            "id": "rem_0",
+            "label": "\u092a\u0939\u0932\u093e \u0905\u0917\u094d\u0930\u0947\u0937\u0923",
+            "template": "ref_hin/ref_hin.docx"
+        },
+        {
+            "id": "rem_1",
+            "label": "\u092a\u0939\u0932\u0940 \u0905\u0928\u0941\u0938\u094d\u092e\u093e\u0930\u0915",
+            "template": "ref_hin/ref_hin_rem1.docx"
+        },
+        {
+            "id": "annex",
+            "label": "\u0905\u0928\u094d\u092f \u0905\u0928\u0941\u0938\u094d\u092e\u093e\u0930\u0915",
+            "template": "ref_hin/ref_hin_rem1plus.docx"
+        },
+        {
+            "id": "final",
+            "label": "\u0905\u0902\u0924\u093f\u092e \u0938\u094d\u0935\u0940\u0915\u0943\u0924\u093f",
+            "template": "ref_hin/ref_hin_final.docx"
+        }
+    ],
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "ref_hin.xlsx",
+        "word_template": "ref_hin.docx"
+    },
+    "fields": [
+        {
+            "name": "file",
+            "label": "\u092b\u093e\u0907\u0932",
+            "type": "text",
+            "placeholder": "\u092b\u093e\u0907\u0932 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "case_col",
+            "label": "\u092e\u0941\u0926\u094d\u0926\u093e",
+            "type": "text",
+            "placeholder": "\u092e\u0941\u0926\u094d\u0926\u093e \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "from_col",
+            "label": "\u092a\u0924\u094d\u0930 \u0915\u0939\u093e\u0901 \u0938\u0947 \u0906\u092f\u093e",
+            "type": "text",
+            "placeholder": "\u092a\u0924\u094d\u0930 \u0915\u0939\u093e\u0901 \u0938\u0947 \u0906\u092f\u093e \u092f\u0939 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "from_dt",
+            "label": "\u092a\u0924\u094d\u0930 \u0915\u0940 \u0926\u093f\u0928\u093e\u0902\u0915",
+            "type": "text",
+            "placeholder": "\u092a\u0924\u094d\u0930 \u0915\u0940 \u0926\u093f\u0928\u093e\u0902\u0915 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "to_col",
+            "label": "\u092a\u0924\u094d\u0930 \u0915\u0939\u093e\u0901 \u092a\u0930 \u0917\u092f\u093e",
+            "type": "text",
+            "placeholder": "\u092a\u0924\u094d\u0930 \u0915\u0939\u093e\u0901 \u092a\u0930 \u0917\u092f\u093e \u092f\u0939 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "puc",
+            "label": "\u0935\u093f\u0937\u092f",
+            "type": "text",
+            "placeholder": "\u0935\u093f\u0937\u092f \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "rly",
+            "label": "\u0930\u0947\u0932\u0935\u0947",
+            "type": "text",
+            "placeholder": "\u0930\u0947\u0932\u0935\u0947 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "with_col",
+            "label": "\u092b\u093e\u0907\u0932 \u0915\u093f\u0938\u0915\u0947 \u092a\u093e\u0938 \u0939\u0948",
+            "type": "text",
+            "placeholder": "\u092b\u093e\u0907\u0932 \u0915\u093f\u0938\u0915\u0947 \u092a\u093e\u0938 \u0939\u0948 \u092f\u0939 \u0932\u093f\u0916\u0947\u0902"
+        },
+        {
+            "name": "toc",
+            "label": "TOC \u0926\u093f\u0928\u093e\u0902\u0915",
+            "type": "text",
+            "placeholder": "TOC \u0926\u093f\u0928\u093e\u0902\u0915 \u0932\u093f\u0916\u0947\u0902"
+        }
+    ],
+    "placeholders": {
+        "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<CASE_COL>": "case_col",
+        "<FROM_COL>": "from_col",
+        "<FROM_DT>": "from_dt",
+        "<TO_COL>": "to_col",
+        "<RLY_NL>": {"field": "rly", "replace": {",": ",\n"}},
+        "<PUC>": "puc",
+        "<RLY>": "rly",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+        "<WITH_COL>": "with_col",
+        "<TOC_DT>": "toc",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    }
+}

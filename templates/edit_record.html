@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ config.display_name }} Record{% endblock %}
+
+{% block page_title %}
+<h2>Edit {{ config.display_name }} Record</h2>
+{% endblock %}
+
+{% block content %}
+<form method="POST" class="edit-form-container">
+    <table class="form-table">
+        {% for field in config.fields %}
+        <tr>
+            <td><label for="{{ field.name }}">{{ field.label }}:</label></td>
+            <td>
+                {% set value = record[field.name] if record and field.name in record else '' %}
+                {% if field.type == 'textarea' %}
+                    <textarea id="{{ field.name }}" name="{{ field.name }}" rows="4"
+                              {% if field.placeholder %} placeholder="{{ field.placeholder }}" {% endif %}
+                              required>{{ value }}</textarea>
+                {% else %}
+                    <input type="{{ field.type|default('text') }}" id="{{ field.name }}" name="{{ field.name }}"
+                           value="{{ value }}" {% if field.placeholder %} placeholder="{{ field.placeholder }}" {% endif %}
+                           required>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <button type="submit" class="btn-blue">Update Record</button>
+                <a href="{{ url_for('records', template_id=config.id) }}" class="btn-gray">Cancel</a>
+            </td>
+        </tr>
+    </table>
+</form>
+{% endblock %}

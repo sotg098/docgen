@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Template Selection{% endblock %}
+
+{% block page_title %}
+<h2>Select a Template</h2>
+{% endblock %}
+
+{% block content %}
+
+<!-- Search -->
+<div class="card"
+     style="padding:16px 24px; margin-bottom:10px; display:flex; align-items:center; gap:16px;">
+
+    <!-- Search Input (75%) -->
+    <input type="text"
+           id="templateSearch"
+           placeholder="🔍 Search templates..."
+           style="flex:0.875%; margin:0;">
+
+</div>
+
+
+
+
+<!-- Template Cards Grid -->
+<div class="template-grid">
+    {% for t in templates %}
+    <div class="template-card" data-template-name="{{ t.display_name | lower }}">
+        <h3 style="margin: 0 0 14px; font-size: 16px; color: var(--text-color);">{{ t.display_name }}</h3>
+
+        <div class="template-actions">
+            <!-- Fill Form
+            <a href="{{ url_for('form', template_id=t.id) }}" class="btn btn-primary">Fill Form</a>
+            -->
+            <!-- View Records -->
+            <a href="{{ url_for('records', template_id=t.id) }}" class="btn btn-blue">View Records</a>
+            <!-- Upload Files
+            <a href="{{ url_for('upload_category', category=t.id) }}" class="btn btn-secondary">Upload Files</a>
+             -->
+
+            {#
+            --------------------------------------------------------------
+            DELETE TEMPLATE — future use ke liye comment out hai
+            Uncomment karne pe template ka JSON, DB aur folder delete ho jayega.
+            Route already hai: POST /delete_template/<template_id>  (app.py line ~335)
+            --------------------------------------------------------------
+            <form action="{{ url_for('delete_template', template_id=t.id) }}" method="POST" style="margin-top: 6px;">
+                <button type="submit" class="btn btn-red" style="width: 100%;"
+                        onclick="return confirm('Are you sure? Ye action undo nahi ho sakta!')">
+                    🗑️ Delete Template
+                </button>
+            </form>
+            --------------------------------------------------------------
+            #}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- No Templates Message -->
+{% if not templates %}
+<div class="card" style="text-align: center; padding: 40px 24px; max-width: 500px;">
+    <p style="font-size: 18px; margin: 0 0 8px;">📭</p>
+    <p style="font-weight: 600; margin: 0 0 6px;">No templates found.</p>
+    <p style="color: var(--text-light); font-size: 13px; margin: 0;">Click "Auto Generate Templates" to create templates from Master Status data.</p>
+</div>
+{% endif %}
+
+{% endblock %}

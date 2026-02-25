@@ -1,0 +1,64 @@
+{
+    "id": "booth",
+    "display_name": "Booth Banner",
+    "database": "booth.db",
+    "document_template": "booth/booth.docx",
+    "base_pdf": "booth/booth.pdf",
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "booth.xlsx",
+        "word_template": "booth.docx"
+    },
+    "fields": [
+        {
+            "name": "file",
+            "label": "File No.",
+            "type": "text",
+            "placeholder": "Enter file number"
+        },
+        {
+            "name": "rly",
+            "label": "Rly",
+            "type": "text",
+            "placeholder": "Enter rly"
+        },
+        {
+            "name": "from_col",
+            "label": "From",
+            "type": "text",
+            "placeholder": "Enter from person"
+        },
+        {
+            "name": "to_col",
+            "label": "To",
+            "type": "text",
+            "placeholder": "Enter to person"
+        },
+        {
+            "name": "puc",
+            "label": "Event",
+            "type": "text",
+            "placeholder": "Enter event"
+        }
+    ],
+    "placeholders": {
+        "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<RLY>": "rly",
+        "<RLY_NL>": {"field": "rly", "replace": {",": ",\n"}},
+        "<FROM_PERSON>": "from_col",
+        "<TO_PERSON>": "to_col",
+        "<EVENT>": "puc",
+        "<PLACE>": "place",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+        "<START_DT>": "start_dt",
+        "<END_DT>": "end_dt",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    },
+    "uploaded_files": [
+        "2009-08-31 policy.pdf",
+        "2024-01-11 comprehensive policy.pdf"
+    ],
+    "runtime_inputs": ["place", "start_dt", "end_dt"]
+}

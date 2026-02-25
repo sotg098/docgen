@@ -1,0 +1,58 @@
+{
+    "id": "rti",
+    "display_name": "RTI",
+    "database": "rti.db",
+    "document_template": "rti/rti.docx",
+    "base_pdf": "rti/rti.pdf",
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "rti.xlsx",
+        "word_template": "rti/rti.docx"
+    },
+    "fields": [
+        {
+            "name": "file",
+            "label": "file_no",
+            "type": "text",
+            "placeholder": "Enter file_no"
+        },
+        {
+            "name": "rly",
+            "label": "rly",
+            "type": "text",
+            "placeholder": "Enter rly"
+        },
+        {
+            "name": "case_col",
+            "label": "rti_no",
+            "type": "text",
+            "placeholder": "Enter rti_no"
+        },
+        {
+            "name": "from_dt",
+            "label": "rti_dt",
+            "type": "text",
+            "placeholder": "Enter rti_dt"
+        },
+        {
+            "name": "from_col",
+            "label": "from_col",
+            "type": "text",
+            "placeholder": "Enter from_col"
+        }
+    ],
+    "placeholders": {
+        "<FILE_NO>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<RLY>": "rly",
+        "<RTI_NO>": "case_col",
+        "<RTI_DT>": "from_dt",
+        "<FROM_COL>": "from_col",
+        "<FROM_COL_NL>": {"field": "from_col", "replace": {",": ",\n"}},
+        "<INFO_SOUGHT>": "info_sought",
+        "<RTI_REPLY>": "rti_reply",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    },
+    "runtime_inputs": ["info_sought", "rti_reply"]
+}

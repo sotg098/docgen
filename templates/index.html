@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.display_name }} - Fill Form{% endblock %}
+
+{% block page_title %}
+<h2>{{ config.display_name }} - Fill Form</h2>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="{{ url_for('submit', template_id=config.id) }}" class="fill-form-container">
+    <table class="form-table" style="width: 100%; table-layout: fixed;">
+        {% for field in config.fields %}
+        <tr>
+            <td style="width: 25%; vertical-align: top;"><label for="{{ field.name }}">{{ field.label }}:</label></td>
+            <td style="width: 75%;">
+                {% set value = request.form.get(field.name, '') %}
+                {% if field.type == 'textarea' %}
+                    <textarea id="{{ field.name }}" name="{{ field.name }}" rows="4"
+                              {% if field.placeholder %} placeholder="{{ field.placeholder }}" {% endif %}
+                              required style="width: 100%;">{{ value }}</textarea>
+                {% else %}
+                    <input type="{{ field.type|default('text') }}" id="{{ field.name }}" name="{{ field.name }}"
+                           value="{{ value }}" {% if field.pattern %} pattern="{{ field.pattern }}" {% endif %}
+                           {% if field.placeholder %} placeholder="{{ field.placeholder }}" {% endif %}
+                           required style="width: 100%;">
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+        <tr>
+            <td colspan="2" style="text-align: center;">
+                <button type="submit" class="btn-blue">Submit</button>
+                <a href="{{ url_for('records', template_id=config.id) }}" class="btn-gray">Cancel</a>
+            </td>
+        </tr>
+    </table>
+</form>
+{% endblock %}

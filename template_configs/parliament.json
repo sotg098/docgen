@@ -1,0 +1,48 @@
+{
+    "id": "parliament",
+    "display_name": "Parliament Question",
+    "database": "parliament.db",
+    "document_template": "parliament/parliament.docx",
+    "base_pdf": "parliament/parliament.pdf",
+    "macro_file": "sample.bas",
+
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "parliament.xlsx",
+        "word_template": "parliament.docx"
+    },
+
+    "fields": [
+        {"name": "file", "label": "File No.", "type": "text", "placeholder": "Enter file number"},
+        {"name": "case_col", "label": "Case Col", "type": "text", "placeholder": "Enter Case"},
+        {"name": "puc", "label": "Subject", "type": "text", "placeholder": "Enter subject"},
+        {"name": "from_col", "label": "From Person", "type": "text", "placeholder": "Enter from person"},
+        {"name": "from_dt", "label": "From Date", "type": "text", "placeholder": "DD.MM.YYYY", "validation": "^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(\\d{4})$"}
+    ],
+
+    "placeholders": {
+        "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<SUBJECT>": {"field": "puc", "extract": "\"([^\"]+)\""},
+        "<SABHA>": {"field": "case_col", "extract": "^(LS|RS)", "replace": {"LS": "Lok Sabha", "RS": "Rajya Sabha"}},
+        "<USQ>": {"field": "usq", "case": "normal"},
+        "<NO>": {"field": "case_col", "extract": "^[^/]+/[^/]+/([^/]+)/"},
+        "<DATE>": {"field": "case_col", "extract": "([^/]{10})$"},
+        "<MP>": {"field": "mp_name", "case": "normal"},
+        "<FROM_PERSON>": {"field": "from_col", "extract": "/(.+)$", "case": "normal"},
+        "<FROM_DT>": {"field": "from_dt", "case": "normal"},
+        "<ROD>": {"field": "rod", "case": "normal"},
+        "<TARGET_DT>": {"field": "target_dt", "case": "normal"},
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+        "<QUESTION>": {"field": "question_text", "case": "normal", "multi_paragraph": true},
+        "<ANSWER>": {"field": "answer_text", "case": "normal", "multi_paragraph": true},
+
+        "<UC_SABHA>": {"field": "sabha", "case": "upper"},
+        "<UC_USQ>": {"field": "usq_type", "case": "upper"},
+        "<UC_MP>": {"field": "mp_name", "case": "upper"},
+        "<UC_SUBJECT>": {"field": "subject", "case": "upper"},
+        "<UC_QUESTION>": {"field": "question_text", "case": "upper"},
+        "<UC_QUESTION_REP>": {"field": "question_text", "case": "upper", "replace_newlines": true}
+    },
+    "runtime_inputs": ["usq", "mp_name","question_text", "answer_text", "rod", "target_dt"]
+}

@@ -1,0 +1,120 @@
+{
+    "id": "master_status",
+    "display_name": "MASTER STATUS",
+    "database": "master_status.db",
+    "document_template": "master_status/master_status.docx",
+    "base_pdf": "master_status/master_status.pdf",
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "master_status.xlsx",
+        "word_template": "master_status.docx"
+    },
+    "fields": [
+        {
+            "name": "sn",
+            "label": "SN",
+            "type": "text",
+            "placeholder": "Enter SN"
+        },
+        {
+            "name": "status",
+            "label": "Status",
+            "type": "text",
+            "placeholder": "Enter Status"
+        },
+        {
+            "name": "dt",
+            "label": "Dt",
+            "type": "text",
+            "placeholder": "Enter Dt"
+        },
+        {
+            "name": "file",
+            "label": "File No.",
+            "type": "text",
+            "placeholder": "Enter file number"
+        },
+        {
+            "name": "case_col",
+            "label": "Case Col",
+            "type": "text",
+            "placeholder": "Enter Case Col"
+        },
+        {
+            "name": "lang",
+            "label": "Lang",
+            "type": "text",
+            "placeholder": "Enter Lang"
+        },
+        {
+            "name": "from_col",
+            "label": "From Col",
+            "type": "text",
+            "placeholder": "Enter From Col"
+        },
+        {
+            "name": "from_dt",
+            "label": "From Dt",
+            "type": "text",
+            "placeholder": "Enter From Dt"
+        },
+        {
+            "name": "to_col",
+            "label": "To Col",
+            "type": "text",
+            "placeholder": "Enter To Col"
+        },
+        {
+            "name": "puc",
+            "label": "PUC",
+            "type": "text",
+            "placeholder": "Enter PUC"
+        },
+        {
+            "name": "rly",
+            "label": "Rly",
+            "type": "text",
+            "placeholder": "Enter Rly"
+        },
+        {
+            "name": "with_col",
+            "label": "With Col",
+            "type": "text",
+            "placeholder": "Enter With Col"
+        },
+        {
+            "name": "toc",
+            "label": "ToC",
+            "type": "text",
+            "placeholder": "Enter ToC"
+        },
+        {
+            "name": "rmrks",
+            "label": "Rmrks",
+            "type": "text",
+            "placeholder": "Enter Rmrks"
+        }
+    ],
+    "placeholders": {
+        "<SN>": "sn",
+        "<STATUS>": "status",
+        "<DT>": "dt",
+        "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<CASE_COL>": "case_col",
+        "<LANG>": "lang",
+        "<FROM_COL>": "from_col",
+        "<FROM_DT>": "from_dt",
+        "<TO_COL>": "to_col",
+        "<RLY_NL>": {"field": "rly", "replace": {",": ",\n"}},
+        "<PUC>": "puc",
+        "<RLY>": "rly",
+        "<WITH_COL>": "with_col",
+        "<TOC>": "toc",
+        "<RMRKS>": "rmrks",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    }
+}
+
+

@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block title %}Add Template{% endblock %}
+
+{% block page_title %}
+<h2>Add New Template from Excel</h2>
+{% endblock %}
+
+{% block content %}
+<div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+    <div class="card">
+        <form method="post" enctype="multipart/form-data">
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Template Name:</label>
+                <input type="text" name="display_name" placeholder="Enter template name" required>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px;">Excel File:</label>
+                <input type="file" name="file" accept=".xls,.xlsx" required>
+            </div>
+
+            <button type="submit" class="btn btn-green">Upload & Create Template</button>
+        </form>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <a href="{{ url_for('home') }}" class="btn btn-secondary">⬅️ Back to Templates</a>
+    </div>
+</div>
+
+<div style="max-width: 1200px; margin: 0 auto; padding: 20px;">
+
+
+
+</div>
+{% endblock %}

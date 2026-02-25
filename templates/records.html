@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}{{ config.display_name }} Records{% endblock %}
+
+{% block content %}
+<h2>{{ config.display_name }} Records
+    <small style="font-size:14px; color:var(--text-light); font-weight:normal;">({{ total }} total)</small>
+</h2>
+
+{# ── Build base URL preserving all current params except page ── #}
+{% set base_url = url_for('records', template_id=config.id) %}
+
+<!-- Global Search Bar -->
+<form method="GET" action="{{ base_url }}"
+      style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+    <input type="text" name="q" value="{{ search }}"
+           placeholder="🔍 Search all fields..."
+           class="search-box"
+           style="flex:1; padding:8px; border-radius:4px; border:1px solid #ccc;">
+    {# Preserve column filters and sort when doing global search #}
+    {% for col, val in col_filters.items() %}
+        <input type="hidden" name="col_{{ col }}" value="{{ val }}">
+    {% endfor %}
+    {% if sort_col %}
+        <input type="hidden" name="sort" value="{{ sort_col }}">
+        <input type="hidden" name="dir"  value="{{ sort_dir }}">
+    {% endif %}
+    <button type="submit" class="btn btn-blue">Search</button>
+    {% if search or col_filters %}
+    <a href="{{ base_url }}" class="btn btn-gray">✕ Clear All</a>
+    {% endif %}
+    <button type="button" onclick="window.print()" class="btn btn-blue">Print</button>
+</form>
+
+<!-- Table -->
+<div class="table-container">
+    <table id="recordsTable">
+        <thead>
+            <!-- Row 1: Sortable column headers -->
+            <tr>
+                {% for field in config.fields %}
+                    {% set next_dir = 'desc' if (sort_col == field.name and sort_dir == 'asc') else 'asc' %}
+                    {% set sort_url = base_url + '?sort=' + field.name + '&dir=' + next_dir + '&q=' + search %}
+                    {# Append existing col filters to sort URL #}
+                    {% set sort_url = sort_url %}
+                    <th style="cursor:pointer; user-select:none; white-space:nowrap;">
+                        <a href="{{ sort_url }}{% for col, val in col_filters.items() %}&col_{{ col }}={{ val }}{% endfor %}"
+                           class="sort-link">
+                            {{ field.label }}
+                            {% if sort_col == field.name %}
+                                {{ '▲' if sort_dir == 'asc' else '▼' }}
+                            {% else %}
+                                <span style="opacity:0.3;">⇅</span>
+                            {% endif %}
+                        </a>
+                    </th>
+                {% endfor %}
+                <th>Actions</th>
+            </tr>
+
+            <!-- Row 2: Per-column filter inputs -->
+            <tr>
+                {% for field in config.fields %}
+                <th>
+                    <form method="GET" action="{{ base_url }}" style="margin:0;">
+                        <input type="text"
+                               name="col_{{ field.name }}"
+                               value="{{ col_filters.get(field.name, '') }}"
+                               placeholder="🔍 {{ field.label }}"
+                               style="width:95%; padding:3px 5px; font-size:11px; border:1px solid #ccc; border-radius:3px;"
+                               onchange="this.form.submit()">
+                        {# Preserve global search + other col filters + sort #}
+                        {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+                        {% for col, val in col_filters.items() %}
+                            {% if col != field.name %}
+                            <input type="hidden" name="col_{{ col }}" value="{{ val }}">
+                            {% endif %}
+                        {% endfor %}
+                        {% if sort_col %}
+                        <input type="hidden" name="sort" value="{{ sort_col }}">
+                        <input type="hidden" name="dir"  value="{{ sort_dir }}">
+                        {% endif %}
+                    </form>
+                </th>
+                {% endfor %}
+                <th></th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for row in data %}
+            <tr>
+                {% for field in config.fields %}
+                    <td><div class="scrollable-cell">{{ row[field.name] }}</div></td>
+                {% endfor %}
+                <td>
+                    {% if config.download_options %}
+                        <select onchange="handleDownload(this)">
+                            <option value="">--Select--</option>
+                            {% for d in config.download_options %}
+                                <option value="{{ url_for('generate_doc', template_id=config.id, record_id=row['id'], doc=d.id) }}">
+                                    {{ d.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <a href="#" onclick="handleDownload('{{ config.id }}', {{ row['id'] }})" class="btn-purple-small">Download</a><br>
+                    {% endif %}
+                    <a href="{{ url_for('edit_record', template_id=config.id, record_id=row['id']) }}" class="btn-blue-small">Edit</a><br>
+                    <a href="{{ url_for('delete_record', template_id=config.id, record_id=row['id']) }}"
+                       class="btn-red-small"
+                       onclick="return confirm('Delete this record?')">Delete</a>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="{{ config.fields|length + 1 }}"
+                    style="text-align:center; padding:30px; color:#999;">
+                    📭 No records found{% if search %} for "<strong>{{ search }}</strong>"{% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination — preserves sort + filters -->
+{% if total_pages > 1 %}
+{% set pg_base = base_url + '?q=' + search %}
+{% if sort_col %}{% set pg_base = pg_base + '&sort=' + sort_col + '&dir=' + sort_dir %}{% endif %}
+{% for col, val in col_filters.items() %}{% set pg_base = pg_base + '&col_' + col + '=' + val %}{% endfor %}
+
+<div class="pagination"
+     style="margin-top:12px; display:flex; align-items:center; gap:10px;">
+
+    <!-- Left Side: Pagination Controls -->
+    <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center; ">
+
+        {% if page > 1 %}
+            <a href="{{ pg_base }}&page=1" class="page-btn">«</a>
+            <a href="{{ pg_base }}&page={{ page-1 }}" class="page-btn">‹</a>
+        {% else %}
+            <button class="page-btn" disabled>«</button>
+            <button class="page-btn" disabled>‹</button>
+        {% endif %}
+
+        {% set start_p = [1, page - 2] | max %}
+        {% set end_p   = [total_pages, page + 2] | min %}
+        {% for p in range(start_p, end_p + 1) %}
+            <a href="{{ pg_base }}&page={{ p }}"
+               class="page-btn {% if p == page %}active{% endif %}">
+               {{ p }}
+            </a>
+        {% endfor %}
+
+        {% if page < total_pages %}
+            <a href="{{ pg_base }}&page={{ page+1 }}" class="page-btn">›</a>
+            <a href="{{ pg_base }}&page={{ total_pages }}" class="page-btn">»</a>
+        {% else %}
+            <button class="page-btn" disabled>›</button>
+            <button class="page-btn" disabled>»</button>
+        {% endif %}
+
+        <span style="margin-left:8px; font-size:13px; color:var(--text-light);">
+            Page {{ page }} of {{ total_pages }} · {{ total }} records
+        </span>
+
+    </div>
+
+    <!-- Right Side: Action Bar -->
+    <a href="{{ url_for('form', template_id=config.id) }}" class="btn btn-gray">+</a>
+
+    <!-- ===========================
+     TO BE USED IF NEED BE, LATER ON, DO NOT DELETE!
+    <a href="{{ url_for('export_excel', template_id=config.id) }}" class="btn btn-blue">Export all (Excel)</a>
+    <a href="{{ url_for('export_word', template_id=config.id) }}" class="btn btn-orange">Export all (Word)</a>
+     =========================== -->
+
+</div>
+{% endif %}
+
+<!-- ===========================
+     TO BE USED IF NEED BE, LATER ON, DO NOT DELETE!
+<div class="import-section">
+    <form action="{{ url_for('import_excel', template_id=config.id) }}"
+          method="post" enctype="multipart/form-data">
+        <div class="import-options">
+            <label class="import-option">
+                <input type="radio" name="action" value="append" checked>
+                <div><strong>Add to Existing Records</strong><span>New rows will be appended</span></div>
+                <input type="radio" name="action" value="overwrite">
+                <div><strong>Replace Existing Records</strong><span>All current records deleted first</span></div>
+            </label>
+        </div>
+        <div class="action-bar" style="margin-top:10px; margin-bottom:20px;">
+            <label class="btn btn-green">
+                Upload Excel File
+                <input type="file" name="file" id="excelFile" accept=".xlsx,.xls" hidden required>
+            </label>
+            <span id="selectedFileName" style="margin-left:12px; font-style:italic; color:#555;">No file selected</span>
+            <button type="submit" class="btn btn-red">Import Excel</button>
+        </div>
+    </form>
+</div>
+=========================== -->
+
+{% endblock %}

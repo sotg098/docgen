@@ -1,0 +1,68 @@
+{
+    "id": "coordination_pm_wing",
+    "display_name": "Coordination PM Wing",
+    "database": "coordination_pm_wing.db",
+    "document_template": "coordination_pm_wing/coordination_pm_wing.docx",
+    "base_pdf": "coordination_pm_wing/coordination_pm_wing.pdf",
+    "macro_file": "sample.bas",
+    "export_options": {
+        "export_excel": true,
+        "export_word": true,
+        "excel_filename": "coordination_pm_wing.xlsx",
+        "word_template": "coordination_pm_wing.docx"
+    },
+    "fields": [
+        {
+            "name": "file",
+            "label": "File No.",
+            "type": "text",
+            "placeholder": "Enter file number"
+        },
+        {
+            "name": "from_col",
+            "label": "From Col",
+            "type": "text",
+            "placeholder": "Enter From Col"
+        },
+        {
+            "name": "from_dt",
+            "label": "From Dt",
+            "type": "text",
+            "placeholder": "Enter From Dt"
+        },
+        {
+            "name": "to_col",
+            "label": "To Col",
+            "type": "text",
+            "placeholder": "Enter To Col"
+        },
+        {
+            "name": "puc",
+            "label": "PUC",
+            "type": "text",
+            "placeholder": "Enter PUC"
+        },
+        {
+            "name": "with_col",
+            "label": "With Col",
+            "type": "text",
+            "placeholder": "Enter With Col"
+        }
+    ],
+    "placeholders": {
+        "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+        "<FROM_COL>": {"field": "from_col", "extract": "/(.+)$", "case": "normal"},
+        "<FROM_DT>": "from_dt",
+        "<TO_COL>": "to_col",
+        "<PUC>": "puc",
+        "<WITH_COL>": "with_col",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+        "<ROD>": "rod",
+        "<TARGET_DT>": "target_dt",
+        "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+    },
+    "uploaded_files": [
+        "2025-11-03 pg nodal for parl matters.pdf"
+    ],
+    "runtime_inputs": ["rod", "target_dt"]
+}

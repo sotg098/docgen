@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Upload & OCR Search{% endblock %}
+
+{% block page_title %}
+<h2>📁 Files for "{{ template_name }}"</h2>
+{% endblock %}
+
+{% block content %}
+
+<!-- ================= Centered Container ================= -->
+<div class="card" style="max-width: 1200px; margin: 0 auto; padding: 20px; display: flex; flex-direction: column; gap: 20px;">
+
+    <!-- ================= OCR Search Form ================= -->
+    <form action="{{ url_for('search_files', category=template_id) }}" method="POST" style="display: flex; gap: 10px;">
+        <input type="text" name="query" placeholder="🔍 Search in OCR text..." value="{{ query or '' }}"
+               style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid #ccc;">
+        <button type="submit" class="btn btn-blue" style="flex: 0 0 120px; white-space: nowrap;">Search</button>
+    </form>
+
+    <!-- ================= OCR Search Results ================= -->
+    {% if query %}
+    <div>
+        {% if search_results %}
+        <div class="card" style="background: #e8f5e9; border-left: 4px solid var(--success-color); padding: 16px;">
+            <h3 style="color: var(--success-color); margin: 0 0 12px;">✅ Found in {{ search_results|length }} file(s)</h3>
+            <ul>
+                {% for result in search_results %}
+                <li style="margin-bottom: 6px;">
+                    <a href="{{ url_for('view_uploaded_file', category=template_id, filename=result.filename) }}#page={{ result.page_number }}" target="_blank">
+                        {{ result.filename }} - Page {{ result.page_number }}
+                    </a>
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% else %}
+        <div class="card" style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 16px;">
+            <h3 style="color: #856404; margin: 0 0 8px;">⚠️ No Results Found</h3>
+            <p>No matches found for "<strong>{{ query }}</strong>" in OCR text.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- ================= Files Grid ================= -->
+    {% if files %}
+    <div class="template-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px;">
+        {% for file in files %}
+        <div class="template-card" style="padding: 16px; border-radius: 8px; border: 1px solid #ddd; display: flex; flex-direction: column; justify-content: space-between;">
+            <div>
+                <h3 style="margin: 0 0 12px; font-size: 16px; color: var(--text-color);">
+                    {{ file }}
+                    {% if file.lower().endswith('.pdf') %}
+                        <span style="color: #f44336;">📄 PDF</span>
+                    {% endif %}
+                </h3>
+            </div>
+            <div class="template-actions" style="display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-start;">
+                <!-- Active buttons -->
+                <a href="{{ url_for('view_uploaded_file', category=template_id, filename=file) }}"
+                   target="_blank"
+                   class="btn btn-blue"
+                   style="flex: 1; min-width: 80px; text-align: center; white-space: nowrap;">View 👁️</a>
+
+                <!-- Commented future buttons -->
+                {#
+                <a href="{{ url_for('download_uploaded_file', category=template_id, filename=file) }}"
+                   class="btn btn-orange"
+                   style="flex: 1; min-width: 80px; text-align: center; white-space: nowrap;">Download ⬇️</a>
+
+                <form action="{{ url_for('delete_uploaded_file', category=template_id, filename=file) }}" method="POST" style="flex: 1; min-width: 80px;">
+                    <button type="submit" class="btn btn-red" style="width: 100%; white-space: nowrap;"
+                            onclick="return confirm('Delete {{ file }}?')">Delete 🗑️</button>
+                </form>
+                #}
+
+                <form action="{{ url_for('run_ocr_file', category=template_id, filename=file) }}" method="POST" style="flex: 1; min-width: 80px;">
+                    <button type="submit" class="btn btn-green" style="width: 100%; white-space: nowrap;">🔍 OCR</button>
+                </form>
+
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 40px; border-radius: 8px; background: white;">
+        <p style="color: #999; font-size: 1.2em; margin:0;">📭 No files uploaded yet</p>
+    </div>
+    {% endif %}
+
+    <!-- ================= Run OCR for All Files ================= -->
+    {% if files %}
+    <div style="display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
+        <form action="{{ url_for('run_ocr_all', category=template_id) }}" method="POST" style="flex: 1; min-width: 160px;">
+            <button type="submit" class="btn btn-green" style="width: 100%; white-space: nowrap;">🚀 Run OCR for All Files</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <!-- ================= Upload Form ================= -->
+    <div style="display: flex; justify-content: center; margin-top: 20px; gap: 10px; flex-wrap: wrap;">
+        <form action="{{ url_for('upload_category', category=template_id) }}" method="POST" enctype="multipart/form-data" style="display:flex; gap:10px; flex-wrap: wrap; align-items: center;">
+            <label class="btn btn-green" style="flex: 1; min-width: 120px; text-align: center;">
+                Import
+                <input type="file" name="files[]" id="bulkFiles" hidden multiple required>
+            </label>
+            <span id="selectedFileNames" style="font-style: italic; color: var(--text-light); white-space: nowrap;">No files selected</span>
+            <button type="submit" class="btn btn-green" style="flex: 1; min-width: 120px;">Upload</button>
+        </form>
+    </div>
+
+</div>
+
+{% endblock %}

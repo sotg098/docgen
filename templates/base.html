@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Traffic General-II{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link href="https://fonts.googleapis.com/css2?family=Allura&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ===========================
+     Top Navbar
+=========================== -->
+<div class="navbar">
+  <div class="navbar-left">
+    <button id="sidebarToggle" class="btn btn-blue">☰</button>
+    <a href="{{ url_for('home') }}" class="navbar-title">Traffic General-II</a>
+    <button id="darkModeToggle" class="btn btn-blue dark-mode-btn" title="Toggle Dark Mode">🌙</button>
+  </div>
+
+  <div class="navbar-center">
+    <a href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='images/blue-train.jpg') }}" alt="Blue Train" class="train-image">
+    </a>
+  </div>
+
+  <div class="navbar-right">
+    <a href="{{ url_for('sync_master_status') }}"
+       class="btn btn-green"
+       style="white-space:nowrap; text-decoration: none;"
+       onclick="return confirm('🔄 Sync data from Excel?\n\nThis will replace all existing records in the database with fresh data from:\nE:\\official\\03 trfc gnrl\\18th ls\\status\\status.xls\n\nContinue?');">
+        🔄
+    </a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-orange">
+        Dash-Board
+    </a>
+  </div>
+</div>
+
+
+<!-- ===========================
+     Layout Wrapper
+=========================== -->
+<div class="layout sidebar-collapsed">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    {% if categories_with_files %}
+      <h3>📤 Policy Files</h3>
+      <div class="sidebar-list">
+        {% for cat in categories_with_files %}
+          <div class="sidebar-item">
+            <a href="{{ url_for('upload_category', category=cat.name) }}" class="btn-blue">
+              <span class="cat-name">{{ cat.name|capitalize }}</span>
+              <span class="cat-count">({{ cat.count }})</span>
+            </a>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="no-files">
+        <p style="font-size: 32px; margin: 0 0 8px;">🔭</p>
+        <p style="font-size: 14px; margin: 0;">No files uploaded yet</p>
+      </div>
+    {% endif %}
+  </aside>
+
+  <!-- Main Content -->
+  <div class="content">
+    {% block page_title %}{% endblock %}
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+      <div class="flash-messages">
+        <ul>
+          {% for message in messages %}
+          <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    {% block search_export %}{% endblock %}
+    {% block table %}{% endblock %}
+    {% block import_section %}{% endblock %}
+    {% block content %}{% endblock %}
+  </div>
+
+</div>
+
+<!-- Bottom Navbar -->
+<div class="bottom-navbar">
+  <p class="footer-subtitle">
+    <i>A humble tribute to the dedicated officials of the TG-II Section!</i>
+  </p>
+</div>
+
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    // ── Dark Mode ──────────────────────────────────────
+    var darkToggle = document.getElementById("darkModeToggle");
+    if (darkToggle) {
+        if (localStorage.getItem("darkMode") === "true") {
+            document.body.classList.add("dark-mode");
+            darkToggle.textContent = "☀️";
+        }
+        darkToggle.addEventListener("click", function () {
+            var isDark = document.body.classList.toggle("dark-mode");
+            darkToggle.textContent = isDark ? "☀️" : "🌙";
+            localStorage.setItem("darkMode", isDark);
+        });
+    }
+
+    // ── Sidebar Toggle ────────────────────────────────
+    var sidebarBtn = document.getElementById("sidebarToggle");
+    var layout     = document.querySelector(".layout");
+    if (sidebarBtn && layout) {
+        sidebarBtn.addEventListener("click", function () {
+            layout.classList.toggle("sidebar-collapsed");
+        });
+    }
+
+    // ── Single file input (excelFile) ─────────────────
+    var excelFile    = document.getElementById("excelFile");
+    var fileNameSpan = document.getElementById("selectedFileName");
+    if (excelFile && fileNameSpan) {
+        excelFile.addEventListener("change", function () {
+            fileNameSpan.textContent = this.files.length > 0
+                ? this.files[0].name : "No file selected";
+        });
+    }
+
+    // ── Bulk file input (upload_files.html) ───────────
+    var bulkFiles     = document.getElementById("bulkFiles");
+    var selectedNames = document.getElementById("selectedFileNames");
+    if (bulkFiles && selectedNames) {
+        bulkFiles.addEventListener("change", function () {
+            var names = Array.from(bulkFiles.files).map(function (f) { return f.name; });
+            selectedNames.textContent = names.length ? names.join(", ") : "No files selected";
+        });
+    }
+
+    // ── Template Search (home.html) ───────────────────
+    var templateSearch = document.getElementById("templateSearch");
+    var templateCards  = document.querySelectorAll(".template-card");
+    var searchStats    = document.getElementById("searchStats");
+    if (templateSearch && templateCards.length) {
+        var totalTemplates = templateCards.length;
+        function runTemplateSearch() {
+            var term = templateSearch.value.toLowerCase().trim();
+            var visible = 0;
+            templateCards.forEach(function (card) {
+                var show = card.getAttribute("data-template-name").includes(term);
+                card.style.display = show ? "" : "none";
+                if (show) visible++;
+            });
+            if (searchStats) {
+                searchStats.textContent = term
+                    ? ("Found " + visible + " of " + totalTemplates + " templates")
+                    : ("Showing all " + totalTemplates + " templates");
+            }
+        }
+        templateSearch.addEventListener("input", function () {
+            clearTimeout(templateSearch._t);
+            templateSearch._t = setTimeout(runTemplateSearch, 150);
+        });
+        document.addEventListener("keydown", function (e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === "f") {
+                e.preventDefault();
+                templateSearch.focus();
+            }
+        });
+        runTemplateSearch();
+    }
+
+    // ── Category Search (dashboard summary mode) ──────
+    var catSearch = document.getElementById("categorySearch");
+    if (catSearch) {
+        catSearch.addEventListener("input", function () {
+            clearTimeout(catSearch._t);
+            catSearch._t = setTimeout(function () {
+                var term = catSearch.value.toLowerCase();
+                document.querySelectorAll(".stat-row").forEach(function (row) {
+                    row.style.display = (row.dataset.category || "").includes(term) ? "" : "none";
+                });
+            }, 150);
+        });
+    }
+
+    // ── Client-side Table: filter + sort + paginate + CSV ──
+    // Used by records.html for non-source_query templates.
+    // dashboard detail_mode uses server-side pagination (no JS table here).
+    var table         = document.getElementById("recordsTable");
+    var searchInput   = document.getElementById("searchInput");
+    var paginationDiv = document.getElementById("pagination");
+
+    if (table && searchInput && paginationDiv) {
+        var tableBody   = table.querySelector("tbody");
+        var rowsPerPage = 5;
+        var currentPage = 1;
+        var cachedRows  = Array.from(tableBody.querySelectorAll("tr"));
+
+        function debounce(fn, ms) {
+            var t;
+            return function () { clearTimeout(t); t = setTimeout(fn, ms); };
+        }
+
+        function getFilteredRows() {
+            var global  = searchInput.value.toLowerCase();
+            var colInps = Array.from(document.querySelectorAll(".column-filter"));
+            return cachedRows.filter(function (row) {
+                if (!row.innerText.toLowerCase().includes(global)) return false;
+                for (var i = 0; i < colInps.length; i++) {
+                    var idx = parseInt(colInps[i].getAttribute("data-column"), 10);
+                    var val = colInps[i].value.toLowerCase();
+                    if (val) {
+                        var cell = row.cells[idx];
+                        if (!cell || !cell.innerText.toLowerCase().includes(val)) return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        function renderRows(filtered) {
+            cachedRows.forEach(function (r) { r.style.display = "none"; });
+            var start = (currentPage - 1) * rowsPerPage;
+            filtered.slice(start, start + rowsPerPage).forEach(function (r) {
+                r.style.display = "table-row";
+            });
+        }
+
+        function renderPagination(filtered) {
+            paginationDiv.innerHTML = "";
+            var total = Math.ceil(filtered.length / rowsPerPage) || 1;
+            if (total <= 1) return;
+
+            function makeBtn(text, pg, active, dis) {
+                var btn = document.createElement("button");
+                btn.textContent = text;
+                btn.className   = "page-btn";
+                if (active) btn.classList.add("active");
+                btn.disabled = !!dis;
+                btn.addEventListener("click", function () {
+                    currentPage = pg;
+                    renderRows(filtered);
+                    renderPagination(filtered);
+                });
+                return btn;
+            }
+
+            paginationDiv.appendChild(makeBtn("«", 1, false, currentPage === 1));
+            paginationDiv.appendChild(makeBtn("‹", currentPage - 1, false, currentPage === 1));
+            var sp = Math.max(1, currentPage - 2);
+            var ep = Math.min(total, sp + 4);
+            sp = Math.max(1, ep - 4);
+            for (var p = sp; p <= ep; p++) {
+                paginationDiv.appendChild(makeBtn(p, p, currentPage === p, false));
+            }
+            paginationDiv.appendChild(makeBtn("›", currentPage + 1, false, currentPage === total));
+            paginationDiv.appendChild(makeBtn("»", total, false, currentPage === total));
+        }
+
+        function filterAndPaginate() {
+            var filtered = getFilteredRows();
+            currentPage  = Math.min(currentPage, Math.ceil(filtered.length / rowsPerPage) || 1);
+            renderRows(filtered);
+            renderPagination(filtered);
+        }
+
+        // Column header click → sort
+        table.querySelectorAll("th:not(:last-child)").forEach(function (th, idx) {
+            th.style.cursor = "pointer";
+            th.addEventListener("click", function () {
+                var asc = th.getAttribute("data-asc") !== "true";
+                cachedRows.sort(function (a, b) {
+                    var aT = (a.cells[idx] ? a.cells[idx].innerText : "").toLowerCase();
+                    var bT = (b.cells[idx] ? b.cells[idx].innerText : "").toLowerCase();
+                    if (!isNaN(aT) && !isNaN(bT)) { aT = parseFloat(aT); bT = parseFloat(bT); }
+                    return asc ? (aT > bT ? 1 : -1) : (aT < bT ? 1 : -1);
+                });
+                cachedRows.forEach(function (r) { tableBody.appendChild(r); });
+                th.setAttribute("data-asc", asc);
+                filterAndPaginate();
+            });
+        });
+
+        // CSV Export
+        var exportBtn = document.getElementById("exportCsvBtn");
+        if (exportBtn) {
+            exportBtn.addEventListener("click", function () {
+                var filtered = getFilteredRows();
+                if (!filtered.length) { alert("No rows to export!"); return; }
+                var headers = Array.from(table.querySelectorAll("thead tr:first-child th"))
+                    .map(function (h) { return '"' + h.innerText.replace(/"/g, '""') + '"'; })
+                    .join(",");
+                var rows = filtered.map(function (row) {
+                    return Array.from(row.querySelectorAll("td"))
+                        .map(function (td) { return '"' + td.innerText.replace(/"/g, '""') + '"'; })
+                        .join(",");
+                });
+                var blob = new Blob([[headers].concat(rows).join("\n")], { type: "text/csv" });
+                var a = document.createElement("a");
+                a.href = URL.createObjectURL(blob);
+                a.download = "filtered_records.csv";
+                a.click();
+            });
+        }
+
+        // Attach listeners
+        searchInput.addEventListener("input", debounce(filterAndPaginate, 200));
+        document.querySelectorAll(".column-filter").forEach(function (inp) {
+            inp.addEventListener("input", debounce(filterAndPaginate, 200));
+        });
+
+        filterAndPaginate();
+    }
+
+}); // END DOMContentLoaded
+
+
+// =====================================================================
+// handleDownload
+// =====================================================================
+function handleDownload(param1, param2) {
+    if (typeof param1 === "object") {
+        var sel   = param1;
+        var url   = sel.value;
+        if (!url) return;
+        var label = sel.options[sel.selectedIndex].text;
+        if (label === "Other Reminders") {
+            var rem = prompt("Enter REM_NO:");
+            if (!rem) { sel.selectedIndex = 0; return; }
+            var fu = new URL(url, window.location.origin);
+            fu.searchParams.set("rem_no", rem.trim());
+            window.location.href = fu.toString();
+        } else {
+            window.location.href = url;
+        }
+        return;
+    }
+
+    var templateId    = param1;
+    var recordId      = param2 || null;
+    var runtimeInputs = {{ config.runtime_inputs | tojson | safe if config.runtime_inputs else 'null' }};
+    var queryParams   = "";
+
+    if (runtimeInputs && runtimeInputs.length > 0) {
+        for (var i = 0; i < runtimeInputs.length; i++) {
+            var val = prompt("Enter " + runtimeInputs[i].toUpperCase() + ":");
+            if (!val) return;
+            queryParams += "&" + runtimeInputs[i] + "=" + encodeURIComponent(val);
+        }
+    }
+
+    var dlUrl = "/generate_doc/" + templateId + "/" + recordId;
+    if (queryParams) dlUrl += "?" + queryParams.substring(1);
+    window.location.href = dlUrl;
+}
+</script>
+{% endblock %}
+
+</body>
+</html>

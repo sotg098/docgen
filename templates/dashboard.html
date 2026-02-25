@@ -1,0 +1,265 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - Financial Year Statistics{% endblock %}
+
+{% block page_title %}
+{% if not detail_mode %}
+<h2>📊 Dashboard - Financial Year Statistics</h2>
+{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if detail_mode %}
+<!-- =====================================================
+     DETAIL MODE — server-side sort + column filter + pagination
+====================================================== -->
+<h2>📂 {{ category }} – {{ record_type }} Records ({{ fy_label }})
+    <small style="font-size:14px; color:var(--text-light); font-weight:normal;">({{ total }} total)</small>
+</h2>
+
+{% set base_url = request.path %}
+
+<!-- Global Search Bar -->
+<form method="GET" action="{{ base_url }}"
+      style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+    <input type="text" name="q" value="{{ search }}"
+           placeholder="🔍 Search all fields..."
+           class="search-box"
+           style="flex:1; padding:8px; border-radius:4px; border:1px solid #ccc;">
+    {% for col, val in col_filters.items() %}
+        <input type="hidden" name="col_{{ col }}" value="{{ val }}">
+    {% endfor %}
+    {% if sort_col %}
+        <input type="hidden" name="sort" value="{{ sort_col }}">
+        <input type="hidden" name="dir"  value="{{ sort_dir }}">
+    {% endif %}
+    <button type="submit" class="btn btn-blue">Search</button>
+    {% if search or col_filters %}
+    <a href="{{ base_url }}" class="btn btn-gray">✕ Clear All</a>
+    {% endif %}
+    <button type="button" onclick="window.print()" class="btn btn-blue">🖨️ Print</button>
+</form>
+
+<!-- Table -->
+<div class="table-container">
+  <table id="recordsTable">
+    <thead>
+      {% if records %}
+      <!-- Row 1: Sortable column headers -->
+      <tr>
+        {% for col in records[0].keys() %}
+          {% set next_dir = 'desc' if (sort_col == col and sort_dir == 'asc') else 'asc' %}
+          <th style="cursor:pointer; user-select:none; white-space:nowrap;">
+            <a href="{{ base_url }}?sort={{ col }}&dir={{ next_dir }}&q={{ search }}{% for c, v in col_filters.items() %}&col_{{ c }}={{ v }}{% endfor %}"
+               class="sort-link">
+              {{ col|upper|replace('_', ' ') }}
+              {% if sort_col == col %}
+                {{ '▲' if sort_dir == 'asc' else '▼' }}
+              {% else %}
+                <span style="opacity:0.3;">⇅</span>
+              {% endif %}
+            </a>
+          </th>
+        {% endfor %}
+      </tr>
+
+      <!-- Row 2: Per-column filter inputs -->
+      <tr>
+        {% for col in records[0].keys() %}
+        <th>
+          <form method="GET" action="{{ base_url }}" style="margin:0;">
+            <input type="text"
+                   name="col_{{ col }}"
+                   value="{{ col_filters.get(col, '') }}"
+                   placeholder="🔍 {{ col|replace('_',' ') }}"
+                   style="width:95%; padding:3px 5px; font-size:11px; border:1px solid #ccc; border-radius:3px;"
+                   onchange="this.form.submit()">
+            {% if search %}<input type="hidden" name="q" value="{{ search }}">{% endif %}
+            {% for c, v in col_filters.items() %}
+              {% if c != col %}<input type="hidden" name="col_{{ c }}" value="{{ v }}">{% endif %}
+            {% endfor %}
+            {% if sort_col %}
+            <input type="hidden" name="sort" value="{{ sort_col }}">
+            <input type="hidden" name="dir"  value="{{ sort_dir }}">
+            {% endif %}
+          </form>
+        </th>
+        {% endfor %}
+      </tr>
+      {% endif %}
+    </thead>
+
+    <tbody>
+      {% if records %}
+        {% for row in records %}
+          <tr>
+            {% for key, val in row.items() %}
+              <td><div class="scrollable-cell">{{ val if val else '-' }}</div></td>
+            {% endfor %}
+          </tr>
+        {% endfor %}
+      {% else %}
+        <tr>
+          <td colspan="99" style="text-align:center; padding:30px; color:#999;">
+            📭 No records found{% if search %} for "<strong>{{ search }}</strong>"{% endif %}
+          </td>
+        </tr>
+      {% endif %}
+    </tbody>
+  </table>
+</div>
+
+<!-- Pagination — preserves sort + filters -->
+{% if detail_mode and total_pages > 1 %}
+{% set pg_base = base_url + '?q=' + search %}
+{% if sort_col %}{% set pg_base = pg_base + '&sort=' + sort_col + '&dir=' + sort_dir %}{% endif %}
+{% for col, val in col_filters.items() %}{% set pg_base = pg_base + '&col_' + col + '=' + val %}{% endfor %}
+
+<div class="pagination" style="margin-top:12px; display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
+    {% if page > 1 %}
+        <a href="{{ pg_base }}&page=1" class="page-btn">«</a>
+        <a href="{{ pg_base }}&page={{ page-1 }}" class="page-btn">‹</a>
+    {% else %}
+        <button class="page-btn" disabled>«</button>
+        <button class="page-btn" disabled>‹</button>
+    {% endif %}
+
+    {% set start_p = [1, page - 2] | max %}
+    {% set end_p   = [total_pages, page + 2] | min %}
+    {% for p in range(start_p, end_p + 1) %}
+        <a href="{{ pg_base }}&page={{ p }}"
+           class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endfor %}
+
+    {% if page < total_pages %}
+        <a href="{{ pg_base }}&page={{ page+1 }}" class="page-btn">›</a>
+        <a href="{{ pg_base }}&page={{ total_pages }}" class="page-btn">»</a>
+    {% else %}
+        <button class="page-btn" disabled>›</button>
+        <button class="page-btn" disabled>»</button>
+    {% endif %}
+
+    <span style="margin-left:8px; font-size:13px; color:var(--text-light);">
+        Page {{ page }} of {{ total_pages }} &nbsp;·&nbsp; {{ total }} records
+    </span>
+</div>
+{% endif %}
+
+
+{% else %}
+<!-- =====================================================
+     DASHBOARD MODE: Summary Statistics
+====================================================== -->
+
+<!-- Summary Cards Row -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:20px; max-width:1200px; width:100%; margin:0 auto 10px;">
+    <div class="card" style="margin:0; text-align:center;">
+        <h3 style="margin:0 0 12px; color:var(--accent-color);">Current FY ({{ current_fy }})</h3>
+        <div style="display:flex; justify-content:center; gap:40px;">
+            <div>
+                <div style="font-size:28px; font-weight:700; color:var(--text-color);">{{ stats|sum(attribute='current_fy_total') }}</div>
+                <div style="font-size:13px; color:var(--text-light);">Total Records</div>
+            </div>
+            <div>
+                <div style="font-size:28px; font-weight:700; color:var(--danger-color);">{{ stats|sum(attribute='current_fy_pending') }}</div>
+                <div style="font-size:13px; color:var(--text-light);">Pending</div>
+            </div>
+        </div>
+    </div>
+    <div class="card" style="margin:0; text-align:center;">
+        <h3 style="margin:0 0 12px; color:var(--accent-color);">Previous FY ({{ previous_fy }})</h3>
+        <div style="display:flex; justify-content:center; gap:40px;">
+            <div>
+                <div style="font-size:28px; font-weight:700; color:var(--text-color);">{{ stats|sum(attribute='previous_fy_total') }}</div>
+                <div style="font-size:13px; color:var(--text-light);">Total Records</div>
+            </div>
+            <div>
+                <div style="font-size:28px; font-weight:700; color:var(--warning-color);">{{ stats|sum(attribute='previous_fy_pending') }}</div>
+                <div style="font-size:13px; color:var(--text-light);">Pending</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ===========================
+     TO BE USED IF NEED BE, LATER ON, DO NOT DELETE!
+<div class="card" style="padding: 16px 24px; margin-bottom: 10px; display: flex; align-items: center; gap: 16px; max-width: 1200px; width: 100%;">
+    <a href="{{ url_for('home') }}" class="btn btn-orange" style="flex: 0.25; text-align: center; white-space: nowrap;">← Templates</a>
+    <div style="flex: 0.125; display: flex; justify-content: center;">
+        <button onclick="window.print()" class="btn btn-blue" style="width: 100%;">🖨️ Print</button>
+    </div>
+    <input type="text" id="categorySearch" placeholder="🔍 Search categories..."
+           style="flex: 0.5; margin: 0; padding: 8px; border-radius: 4px; border: 1px solid #ccc;">
+    <a href="{{ url_for('sync_master_status') }}" class="btn btn-green"
+       style="flex: 0.125; white-space: nowrap; text-align: center;"
+       onclick="if(confirm('...')) { window.location.href=this.href; return false; } else { return false; }">
+        🔄 Sync from Excel
+    </a>
+</div>
+=========================== -->
+
+<!-- Main Stats Table -->
+<div class="table-container">
+    <table>
+        <thead>
+            <tr>
+                <th>Category</th>
+                <th colspan="2">{{ current_fy }}</th>
+                <th colspan="2">{{ previous_fy }}</th>
+            </tr>
+            <tr>
+                <th></th>
+                <th>Total</th>
+                <th>Pending</th>
+                <th>Total</th>
+                <th>Pending</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stat in stats %}
+            <tr class="stat-row" data-category="{{ stat.category | lower | replace(' ', '_') }}">
+                <td>
+                    <a href="{{ url_for('upload_category', category=normalize_category(stat.category)) }}"
+                       style="color:var(--accent-color); text-decoration:underline;">
+                       {{ stat.category }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('all_records', category=normalize_category(stat.category), fy='current') }}" class="stat-link">
+                        {{ stat.current_fy_total }}
+                    </a>
+                </td>
+                <td style="{% if stat.current_fy_pending > 0 %}font-weight:600;{% endif %}">
+                    <a href="{{ url_for('pending_records', category=normalize_category(stat.category), fy='current') }}"
+                       class="stat-link {% if stat.current_fy_pending > 0 %}stat-link--danger{% endif %}">
+                        {{ stat.current_fy_pending }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('all_records', category=normalize_category(stat.category), fy='previous') }}" class="stat-link">
+                        {{ stat.previous_fy_total }}
+                    </a>
+                </td>
+                <td style="{% if stat.previous_fy_pending > 0 %}font-weight:600;{% endif %}">
+                    <a href="{{ url_for('pending_records', category=normalize_category(stat.category), fy='previous') }}"
+                       class="stat-link {% if stat.previous_fy_pending > 0 %}stat-link--warning{% endif %}">
+                        {{ stat.previous_fy_pending }}
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr style="background:linear-gradient(135deg, var(--primary-color), var(--primary-light)); color:white; font-weight:700;">
+                <td style="color:white;">TOTAL</td>
+                <td style="color:white;">{{ stats|sum(attribute='current_fy_total') }}</td>
+                <td style="color:white;">{{ stats|sum(attribute='current_fy_pending') }}</td>
+                <td style="color:white;">{{ stats|sum(attribute='previous_fy_total') }}</td>
+                <td style="color:white;">{{ stats|sum(attribute='previous_fy_pending') }}</td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+
+{% endif %}
+{% endblock %}

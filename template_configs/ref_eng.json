@@ -1,0 +1,61 @@
+{
+  "id": "ref_eng",
+  "display_name": "Reference (English) - Direct",
+  "database": "ref_eng.db",
+    "document_template": "ref_eng/ref_eng.docx",
+    "base_pdf": "ref_eng/ref_eng.pdf",
+"download_options": [
+  {
+    "id": "rem_0",
+    "label": "First Forwarding",
+    "template": "ref_eng/ref_eng.docx"
+  },
+  {
+    "id": "rem_1",
+    "label": "First Reminder",
+    "template": "ref_eng/ref_eng_rem1.docx"
+  },
+  {
+    "id": "annex",
+    "label": "Other Reminders",
+    "template": "ref_eng/ref_eng_rem1plus.docx"
+  },
+  {
+    "id": "final",
+    "label": "Final Approval",
+    "template": "ref_eng/ref_eng_final.docx"
+  }
+],
+  "macro_file": "sample.bas",
+  "export_options": {
+    "export_excel": true,
+    "export_word": true,
+    "excel_filename": "ref_eng.xlsx",
+    "word_template": "ref_eng.docx"
+  },
+  "fields": [
+    {"name": "file", "label": "File No.", "type": "text", "placeholder": "Enter file number"},
+    { "name": "case_col", "label": "Case Col", "type": "text" },
+    { "name": "from_col", "label": "From Col", "type": "text" },
+    { "name": "from_dt", "label": "From Dt", "type": "text" },
+    { "name": "to_col", "label": "To Col", "type": "text" },
+    { "name": "puc", "label": "PUC", "type": "text" },
+    { "name": "rly", "label": "Rly", "type": "text" },
+    { "name": "with_col", "label": "With Col", "type": "text" },
+    { "name": "toc", "label": "TOC Dt", "type": "text" }
+  ],
+  "placeholders": {
+    "<FILE>": {"field": "file", "case": "normal", "extract": "File No.:\\s*(.*?)\\s*\\(Comp\\. No\\."},
+    "<CASE_COL>": "case_col",
+    "<FROM_COL>": "from_col",
+    "<FROM_DT>": "from_dt",
+    "<TO_COL>": "to_col",
+    "<RLY_NL>": {"field": "rly", "replace": {",": ",\n"}},
+    "<PUC>": "puc",
+    "<RLY>": "rly",
+    "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"},
+    "<WITH_COL>": "with_col",
+    "<TOC_DT>": "toc",
+    "<NOW>": {"type": "auto_date", "format": "DD.MM.YYYY"}
+  }
+}
